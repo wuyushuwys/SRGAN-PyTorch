@@ -85,8 +85,8 @@ def main() -> None:
             # Fix the generator and update the discriminator.
             for parameters in discriminator.parameters():
                 parameters.requires_grad = True
-#             for parameters in generator.parameters():
-#                 parameters.requires_grad = False
+            for parameters in generator.parameters():
+                parameters.requires_grad = False
             # Set the discriminator gradient to 0.
             discriminator.zero_grad()
 
@@ -114,11 +114,11 @@ def main() -> None:
             # Fix the discriminator and update the generator.
             for parameters in discriminator.parameters():
                 parameters.requires_grad = False
-#             for parameters in generator.parameters():
-#                 parameters.requires_grad = True
+            for parameters in generator.parameters():
+                parameters.requires_grad = True
             # Set the generator gradient to 0.
             generator.zero_grad()
-            
+            sr = generator(lr)
             # Train fake sample with generator.
             sr_output = discriminator(sr)
             pixel_loss = pixel_criterion(sr, hr)
