@@ -35,7 +35,7 @@ class ResidualBlock(nn.Module):
         self.conv_block = nn.Sequential(
             nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
             nn.BatchNorm2d(channels),
-            nn.PReLU(),
+            nn.ReLU(),
             nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
             nn.BatchNorm2d(channels)
         )
@@ -125,7 +125,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.conv_block1 = nn.Sequential(
             nn.Conv2d(3, 64, 9, 1, 4),
-            nn.PReLU()
+            nn.ReLU()
         )
 
         trunk = []
@@ -142,11 +142,11 @@ class Generator(nn.Module):
             nn.Conv2d(64, 256, 3, 1, 1, bias=False),
             nn.BatchNorm2d(256),
             nn.PixelShuffle(upscale_factor=2),
-            nn.PReLU(),
+            nn.ReLU(),
             nn.Conv2d(64, 256, 3, 1, 1, bias=False),
             nn.BatchNorm2d(256),
             nn.PixelShuffle(upscale_factor=2),
-            nn.PReLU()
+            nn.ReLU()
         )
 
         self.conv_block3 = nn.Conv2d(64, 3, 9, 1, 4)
@@ -191,7 +191,7 @@ class PerceptualLoss(nn.Module):
         # Load the VGG19 model trained on the ImageNet dataset.
         vgg19 = models.vgg19(pretrained=True, num_classes=1000).eval()
         # The feature extraction layer in the VGG19 model is extracted as the content loss.
-        self.feature_extractor = nn.Sequential(*list(vgg19.features.children())[:36])
+        self.feature_extractor = nn.Sequential(*list(vgg19.features.children())[:35])
         # Freeze model parameters.
         for parameters in self.feature_extractor.parameters():
             parameters.requires_grad = False

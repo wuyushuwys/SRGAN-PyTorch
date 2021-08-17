@@ -45,62 +45,62 @@ exp_name = "exp001"
 # ==============================================================================
 #                              Train configure
 # ==============================================================================
-if mode == "train":
-    # 1. Dataset path.
-    dataroot              = "data/ImageNet"
-    image_size            = 96
-    batch_size            = 16
+# if mode == "train":
+# 1. Dataset path.
+dataroot              = "data/DIV2K/train"
+image_size            = 96
+batch_size            = 16
 
-    # 2. Define model.
-    discriminator         = Discriminator(image_size).to(device)
-    generator             = Generator().to(device)
+# 2. Define model.
+discriminator         = Discriminator(image_size).to(device)
+generator             = Generator().to(device)
 
-    # 3. Reume training.
-    start_p_epoch         = 0                                              
-    start_g_epoch         = 0                                              
-    resume                = False                                          
-    resume_p_weight       = ""                                             
-    resume_d_weight       = ""                                             
-    resume_g_weight       = ""                                             
+# 3. Reume training.
+start_p_epoch         = 0                                              
+start_g_epoch         = 0                                              
+resume                = False                                          
+resume_p_weight       = ""                                             
+resume_d_weight       = ""                                             
+resume_g_weight       = ""                                             
 
-    # 4. Number of epochs.
-    p_epochs              = 45                                         
-    g_epochs              = 9
-                                             
-    # 5. Loss function.
-    pixel_criterion       = nn.MSELoss().to(device)                        
-    perceptual_criterion  = PerceptualLoss().to(device)                   
-    adversarial_criterion = nn.BCELoss().to(device)           
-    # Loss function weight.
-    perceptual_weight     = 6e-03
-    adversarial_weight    = 1e-03
+# 4. Number of epochs.
+p_epochs              = 45                                         
+g_epochs              = 9
 
-    # 6. Optimizer.
-    p_optimizer           = optim.Adam(generator.parameters(),     1e-4) 
-    d_optimizer           = optim.Adam(discriminator.parameters(), 1e-4) 
-    g_optimizer           = optim.Adam(generator.parameters(),     1e-4) 
+# 5. Loss function.
+pixel_criterion       = nn.MSELoss().to(device)                        
+perceptual_criterion  = PerceptualLoss().to(device)                   
+adversarial_criterion = nn.BCELoss().to(device)           
+# Loss function weight.
+perceptual_weight     = 6e-03
+adversarial_weight    = 1e-03
 
-    # 7. Leaning scheduler.
-    d_scheduler           = StepLR(d_optimizer, g_epochs // 2)           
-    g_scheduler           = StepLR(g_optimizer, g_epochs // 2)           
+# 6. Optimizer.
+p_optimizer           = optim.Adam(generator.parameters(),     1e-4) 
+d_optimizer           = optim.Adam(discriminator.parameters(), 1e-4) 
+g_optimizer           = optim.Adam(generator.parameters(),     1e-4) 
 
-    # 8. Training log.
-    writer                = SummaryWriter(os.path.join("samples", "logs", exp_name))
+# 7. Leaning scheduler.
+d_scheduler           = StepLR(d_optimizer, g_epochs // 2)           
+g_scheduler           = StepLR(g_optimizer, g_epochs // 2)           
+
+# 8. Training log.
+writer                = SummaryWriter(os.path.join("samples", "logs", exp_name))
 
 
-    # Exp model name.
-    p_filename            = f"P-{exp_name}.pth"
-    d_filename            = f"D-{exp_name}.pth"
-    g_filename            = f"G-{exp_name}.pth"
+# Exp model name.
+p_filename            = f"P-{exp_name}.pth"
+d_filename            = f"D-{exp_name}.pth"
+g_filename            = f"G-{exp_name}.pth"
 
 # ==============================================================================
 #                              Validate configure
 # ==============================================================================
-if mode == "validate":
-    net        = Generator().to(device)
+# if mode == "validate":
+#     net        = Generator().to(device)
     # Model weight path.
-    model_path = f"results/G-{exp_name}.pth"
+#     model_path = f"results/G-{exp_name}.pth"
     # Test dataset path.
-    lr_dir     = f"data/Set5/LRbicx4"
-    sr_dir     = f"results/{exp_name}"
-    hr_dir     = f"data/Set5/GTmod12"
+lr_dir     = f"data/Set5/LRbicx4"
+sr_dir     = f"results/{exp_name}"
+hr_dir     = f"data/Set5/GTmod12"

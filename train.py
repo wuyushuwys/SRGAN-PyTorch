@@ -20,6 +20,7 @@ import torch.utils.data
 
 from config import *
 from dataset import BaseDataset
+from validate import test
 
 
 def main() -> None:
@@ -41,6 +42,8 @@ def main() -> None:
     num_batches = len(dataloader)
     # Train PSNR-Oral.
     for epoch in range(start_p_epoch, p_epochs):
+        discriminator.train()
+        generator.train()
         for index, data in enumerate(dataloader, 1):
             lr = data[0].to(device)
             hr = data[1].to(device)
@@ -58,12 +61,16 @@ def main() -> None:
             writer.add_scalar("PSNR/Loss", loss.item(), batches)
             
         # Save checkpoint model.
-        torch.save(generator.state_dict(), os.path.join("samples", f"P_epoch{epoch}.pth"))
+        test(generator)
+        torch.save(generator.state_dict(), os.path.join("samples", p_filename))
+        
     # Save final model.
     torch.save(generator.state_dict(), os.path.join("results", p_filename))
 
     # Train GAN-Oral.
     for epoch in range(start_g_epoch, g_epochs):
+        discriminator.train()
+        generator.train()
         for index, data in enumerate(dataloader, 1):
             lr = data[0].to(device)
             hr = data[1].to(device)
@@ -136,8 +143,9 @@ def main() -> None:
         d_scheduler.step()
         g_scheduler.step()
         # Save checkpoint model.
-        torch.save(discriminator.state_dict(), os.path.join("samples", f"D_epoch{epoch}.pth"))
-        torch.save(generator.state_dict(),     os.path.join("samples", f"G_epoch{epoch}.pth"))
+        test(generator)
+        torch.save(discriminator.state_dict(), os.path.join("samples", d_filename))
+        torch.save(generator.state_dict(),     os.path.join("samples", g_filename))
     # Save final model.
     torch.save(discriminator.state_dict(), os.path.join("results", d_filename))
     torch.save(generator.state_dict(),     os.path.join("results", g_filename))
