@@ -84,8 +84,8 @@ def main() -> None:
             # Fix the generator and update the discriminator.
             for parameters in discriminator.parameters():
                 parameters.requires_grad = True
-            for parameters in generator.parameters():
-                parameters.requires_grad = False
+#             for parameters in generator.parameters():
+#                 parameters.requires_grad = False
             # Set the discriminator gradient to 0.
             discriminator.zero_grad()
 
@@ -113,18 +113,19 @@ def main() -> None:
             # Fix the discriminator and update the generator.
             for parameters in discriminator.parameters():
                 parameters.requires_grad = False
-            for parameters in generator.parameters():
-                parameters.requires_grad = True
+#             for parameters in generator.parameters():
+#                 parameters.requires_grad = True
             # Set the generator gradient to 0.
             generator.zero_grad()
             
             # Train fake sample with generator.
             sr_output = discriminator(sr)
-            perceptual_loss  = perceptual_weight  * perceptual_criterion(sr, hr.detach())
+            pixel_loss = pixel_criterion(sr, hr)
+            perceptual_loss  = perceptual_weight  * perceptual_criterion(sr, hr)
             adversarial_loss = adversarial_weight * adversarial_criterion(sr_output, real_label)
 
             # Update the generator weights.
-            g_loss = perceptual_loss + adversarial_loss
+            g_loss = pixel_loss + perceptual_loss + adversarial_loss
             g_loss.backward()
             g_optimizer.step()
             d_sr2 = sr_output.mean().item()
