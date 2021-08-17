@@ -40,7 +40,7 @@ device = torch.device("cuda:0")
 mode = "train"
 scale_factor = 4
 # Exp name.
-exp_name = "exp003"
+exp_name = "exp002"
 
 # ==============================================================================
 #                              Train configure
@@ -56,16 +56,16 @@ discriminator         = Discriminator(image_size).to(device)
 generator             = Generator().to(device)
 
 # 3. Reume training.
-start_p_epoch         = 0                                             
+start_p_epoch         = 0                                              
 start_g_epoch         = 0                                              
 resume                = True                                          
-resume_p_weight       = "samples/P-exp002.pth"                                             
+resume_p_weight       = "srgan.pt"                                             
 resume_d_weight       = ""                                             
 resume_g_weight       = ""                                             
 
 # 4. Number of epochs.
-p_epochs              = 0                                         
-g_epochs              = 100
+p_epochs              = 45                                         
+g_epochs              = 200
 
 # 5. Loss function.
 pixel_criterion       = nn.MSELoss().to(device)                        
