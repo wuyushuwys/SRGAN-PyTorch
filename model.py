@@ -29,24 +29,47 @@ __all__ = [
 ]
 
 
+# class ResidualBlock(nn.Module):
+#     def __init__(self, channels: int) -> None:
+#         super(ResidualBlock, self).__init__()
+#         self.conv_block = nn.Sequential(
+#             nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
+#             nn.BatchNorm2d(channels),
+#             nn.ReLU(),
+#             nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
+#             nn.BatchNorm2d(channels)
+#         )
+
+#     def forward(self, x: Tensor) -> Tensor:
+#         identity = x
+        
+#         out = self.conv_block(x)
+#         out = out + identity
+
+#         return out
+    
+    
 class ResidualBlock(nn.Module):
     def __init__(self, channels: int) -> None:
+        """
+        Args:
+            channels (int): Number of channels in the input image.
+        """
         super(ResidualBlock, self).__init__()
-        self.conv_block = nn.Sequential(
-            nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(channels),
-            nn.ReLU(),
-            nn.Conv2d(channels, channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(channels)
-        )
+        self.conv1 = nn.Conv2d(channels, channels, 3, 1, 1, bias=False)
+        self.bn1 = nn.BatchNorm2d(channels)
+        self.relu = nn.ReLU()
+        self.conv2 = nn.Conv2d(channels, channels, 3, 1, 1, bias=False)
+        self.bn2 = nn.BatchNorm2d(channels)
 
-    def forward(self, x: Tensor) -> Tensor:
-        identity = x
-        
-        out = self.conv_block(x)
-        out = out + identity
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.bn2(out)
 
-        return out
+        return out + x
 
 
 class Discriminator(nn.Module):
@@ -120,49 +143,111 @@ class Discriminator(nn.Module):
                     m.bias.data.fill_(0)
 
 
+# class Generator(nn.Module):
+#     def __init__(self) -> None:
+#         super(Generator, self).__init__()
+#         self.conv_block1 = nn.Sequential(
+#             nn.Conv2d(3, 64, 9, 1, 4),
+#             nn.ReLU()
+#         )
+
+#         trunk = []
+#         for _ in range(16):
+#             trunk.append(ResidualBlock(64))
+#         self.trunk = nn.Sequential(*trunk)
+
+#         self.conv_block2 = nn.Sequential(
+#             nn.Conv2d(64, 64, 3, 1, 1, bias=False),
+#             nn.BatchNorm2d(64)
+#         )
+
+#         self.upsampling = nn.Sequential(
+#             nn.Conv2d(64, 256, 3, 1, 1, bias=False),
+#             nn.BatchNorm2d(256),
+#             nn.PixelShuffle(upscale_factor=2),
+#             nn.ReLU(),
+#             nn.Conv2d(64, 256, 3, 1, 1, bias=False),
+#             nn.BatchNorm2d(256),
+#             nn.PixelShuffle(upscale_factor=2),
+#             nn.ReLU()
+#         )
+
+#         self.conv_block3 = nn.Conv2d(64, 3, 9, 1, 4)
+
+#         self._initialize_weights()
+
+#     def forward(self, x: Tensor) -> Tensor:
+#         out1 = self.conv_block1(x)
+#         out = self.trunk(out1)
+#         out2 = self.conv_block2(out)
+#         out = out1 + out2
+#         out = self.upsampling(out)
+#         out = self.conv_block3(out)
+
+#         return out
+
+#     def _initialize_weights(self) -> None:
+#         for m in self.modules():
+#             if isinstance(m, nn.Conv2d):
+#                 nn.init.kaiming_normal_(m.weight)
+#                 m.weight.data *= 0.1
+#                 if m.bias is not None:
+#                     m.bias.data.fill_(0)
+#             elif isinstance(m, nn.BatchNorm2d):
+#                 nn.init.constant_(m.weight, 1)
+#                 m.weight.data *= 0.1
+#                 if m.bias is not None:
+#                     m.bias.data.fill_(0)
+
 class Generator(nn.Module):
+    r""""""
+
     def __init__(self) -> None:
+        """
+        """
         super(Generator, self).__init__()
-        self.conv_block1 = nn.Sequential(
+        # Calculating the number of subpixel convolution layers.
+        num_subpixel_convolution_layers = 2
+        
+        # First layer.
+        self.conv1 = nn.Sequential(
             nn.Conv2d(3, 64, 9, 1, 4),
             nn.ReLU()
         )
 
+        # 16 Residual blocks.
         trunk = []
         for _ in range(16):
             trunk.append(ResidualBlock(64))
         self.trunk = nn.Sequential(*trunk)
 
-        self.conv_block2 = nn.Sequential(
+        # Second conv layer post residual blocks.
+        self.conv2 = nn.Sequential(
             nn.Conv2d(64, 64, 3, 1, 1, bias=False),
             nn.BatchNorm2d(64)
         )
 
-        self.upsampling = nn.Sequential(
-            nn.Conv2d(64, 256, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(256),
-            nn.PixelShuffle(upscale_factor=2),
-            nn.ReLU(),
-            nn.Conv2d(64, 256, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(256),
-            nn.PixelShuffle(upscale_factor=2),
-            nn.ReLU()
-        )
+        # 2 Sub-pixel convolution layers.
+        subpixel_conv_layers = []
+        for _ in range(num_subpixel_convolution_layers):
+            subpixel_conv_layers.append(SubpixelConvolutionLayer(64))
+        self.subpixel_conv = nn.Sequential(*subpixel_conv_layers)
 
-        self.conv_block3 = nn.Conv2d(64, 3, 9, 1, 4)
-
+        # Final output layer.
+        self.conv3 = nn.Conv2d(64, 3, 9, 1, 4)
+        
         self._initialize_weights()
 
-    def forward(self, x: Tensor) -> Tensor:
-        out1 = self.conv_block1(x)
-        out = self.trunk(out1)
-        out2 = self.conv_block2(out)
-        out = out1 + out2
-        out = self.upsampling(out)
-        out = self.conv_block3(out)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        conv1 = self.conv1(x)
+        trunk = self.trunk(conv1)
+        conv2 = self.conv2(trunk)
+        out = torch.add(conv1, conv2)
+        out = self.subpixel_conv(out)
+        out = self.conv3(out)
 
         return out
-
+    
     def _initialize_weights(self) -> None:
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -175,6 +260,26 @@ class Generator(nn.Module):
                 m.weight.data *= 0.1
                 if m.bias is not None:
                     m.bias.data.fill_(0)
+
+
+class SubpixelConvolutionLayer(nn.Module):
+    def __init__(self, channels: int) -> None:
+        """
+        Args:
+            channels (int): Number of channels in the input image.
+        """
+        super(SubpixelConvolutionLayer, self).__init__()
+        self.conv = nn.Conv2d(channels, channels * 4, 3, 1, 1)
+        self.pixel_shuffle = nn.PixelShuffle(2)
+        self.relu = nn.ReLU()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv(x)
+        out = self.pixel_shuffle(out)
+        out = self.relu(out)
+
+        return out
+
 
 
 class PerceptualLoss(nn.Module):

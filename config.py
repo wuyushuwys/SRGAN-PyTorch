@@ -40,7 +40,7 @@ device = torch.device("cuda:0")
 mode = "train"
 scale_factor = 4
 # Exp name.
-exp_name = "exp001"
+exp_name = "exp002"
 
 # ==============================================================================
 #                              Train configure
@@ -56,10 +56,10 @@ discriminator         = Discriminator(image_size).to(device)
 generator             = Generator().to(device)
 
 # 3. Reume training.
-start_p_epoch         = 0                                              
+start_p_epoch         = 0                                             
 start_g_epoch         = 0                                              
-resume                = False                                          
-resume_p_weight       = ""                                             
+resume                = True                                          
+resume_p_weight       = "srgan.pt"                                             
 resume_d_weight       = ""                                             
 resume_g_weight       = ""                                             
 

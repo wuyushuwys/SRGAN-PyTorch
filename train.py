@@ -38,6 +38,7 @@ def main() -> None:
         else:
             discriminator.load_state_dict(torch.load(resume_d_weight))
             generator.load_state_dict(torch.load(resume_g_weight))
+        test(generator)
 
     num_batches = len(dataloader)
     # Train PSNR-Oral.
